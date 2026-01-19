@@ -1,65 +1,137 @@
-import Image from "next/image";
+'use client'
+
+import { useQueries } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
+import { 
+  fetchWeeklyVolume,
+  fetchTestosteroneIncrease, 
+  fetchTotalLiftIncrease,
+  fetchWeightChange 
+} from '@/src/lib/queries'
+import WeeklyVolumeChart from '@/src/components/charts/WeeklyVolumeChart'
+import MetricCard from '@/src/components/ui/MetricCard'
+import PageHeader from '@/src/components/ui/PageHeader'
+import BaseCard from '@/src/components/ui/BaseCard'
+import NoDataCard from '@/src/components/ui/NoDataCard'
 
 export default function Home() {
+  const [windowSize, setWindowSize] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024)
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize(window.innerWidth)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const results = useQueries({
+    queries: [
+      {
+        queryKey: ['weeklyVolume'],
+        queryFn: fetchWeeklyVolume,
+      },
+      {
+        queryKey: ['testosteroneIncrease'],
+        queryFn: fetchTestosteroneIncrease,
+      },
+      {
+        queryKey: ['totalLiftIncrease'],
+        queryFn: fetchTotalLiftIncrease,
+      },
+      {
+        queryKey: ['weightChange'],
+        queryFn: fetchWeightChange,
+      },
+    ],
+  })
+  
+  const [
+    { data: weeklyVolume, isLoading: isWeeklyVolumeLoading, error: weeklyVolumeError },
+    { data: testosteroneData, isLoading: isTestosteroneLoading, error: testosteroneError },
+    { data: totalLiftData, isLoading: isTotalLiftLoading, error: totalLiftError },
+    { data: weightChangeData, isLoading: isWeightChangeLoading, error: weightChangeError },
+  ] = results
+
+  const isLoading = isWeeklyVolumeLoading || isTestosteroneLoading || isTotalLiftLoading || isWeightChangeLoading
+  const isError = !!(weeklyVolumeError || testosteroneError || totalLiftError || weightChangeError)
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="h-full flex flex-col bg-white dark:bg-blue-900 gap-4 lg:gap-8">
+      <div>
+        <PageHeader header={"Overview"} />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
+          {isLoading ? (
+            <>
+              <div className="h-23 md:h-29 bg-blue-50 dark:bg-blue-950 rounded-lg animate-pulse" />
+              <div className="h-23 md:h-29 bg-blue-50 dark:bg-blue-950 rounded-lg animate-pulse" />
+              <div className="h-23 md:h-29 bg-blue-50 dark:bg-blue-950 rounded-lg animate-pulse" />
+              <div className="h-23 md:h-29 bg-blue-50 dark:bg-blue-950 rounded-lg animate-pulse" />
+            </>
+          ) : (
+            <>
+              <MetricCard
+                label="Weight Gain"
+                primaryDataPoint={
+                  weightChangeData?.kgChange !== undefined
+                    ? `${weightChangeData.kgChange.toFixed(1)}kg`
+                    : '--'
+                }
+                secondaryDataPoint={
+                  weightChangeData?.percentChange !== undefined
+                    ? `${weightChangeData.percentChange.toFixed(0)}%`
+                    : undefined
+                }
+              />
+
+              <MetricCard
+                label="SBD Maxes Gain"
+                primaryDataPoint={
+                  totalLiftData?.kgIncrease !== undefined
+                    ? `${totalLiftData.kgIncrease.toFixed(1).replace(/\.0$/, '')}kg`
+                    : '--'
+                }
+                secondaryDataPoint={
+                  totalLiftData?.percentIncrease !== undefined
+                    ? `${totalLiftData.percentIncrease.toFixed(0)}%`
+                    : undefined
+                }
+              />
+              
+              <MetricCard
+                label="Testosterone Gain"
+                primaryDataPoint={
+                  testosteroneData?.percentIncrease !== undefined
+                    ? `${testosteroneData.percentIncrease.toFixed(0)}%`
+                    : '--'
+                }
+              />
+              
+              <MetricCard
+                label="Total Reps"
+                primaryDataPoint={
+                  weeklyVolume
+                    ? weeklyVolume.reduce((sum, w) => sum + w.totalVolume, 0).toLocaleString()
+                    : '--'
+                }
+              />
+            </>
+          )}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
+      
+      <BaseCard type='chart' padding={true} isLoading={isLoading} isError={isError}>
+        {!isLoading && !isError && weeklyVolume && weeklyVolume.length > 0 && (
+          <div className="h-full"> 
+            <WeeklyVolumeChart data={weeklyVolume} windowSize={windowSize}/>
+          </div>
+        )}
+        
+        {!isLoading && !isError && weeklyVolume && weeklyVolume.length === 0 && (
+          <NoDataCard/>
+        )}
+      </BaseCard>
     </div>
-  );
+  )
 }

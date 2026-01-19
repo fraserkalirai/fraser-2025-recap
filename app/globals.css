@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
+@theme {  
+  --breakpoint-md: 56rem;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #eff6ff;
+  --foreground: #162456;
 }
 
 @theme inline {
@@ -14,8 +18,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #162456;
+    --foreground: #eff6ff;
   }
 }
 
