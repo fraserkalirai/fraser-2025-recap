@@ -264,7 +264,7 @@ export default function BiometricLineChart({
   }, [sleepData, hormoneData, bodyCompositionData, metrics, isDark])
 
   if (metrics.filter(m => m.enabled).length === 0) {
-    return <div className="w-full h-full p-4 text-center text-whiten flex flex-col justify-center">Select at least one metric to display.</div>
+    return <div className="w-full h-full p-4 text-center text-whiten flex flex-col justify-center text-blue-900 dark:text-white">Select at least one metric to display.</div>
   }
 
   return (
