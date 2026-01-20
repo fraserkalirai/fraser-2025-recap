@@ -151,7 +151,7 @@ export default function BiometricsPage() {
           <ErrorCard />
         </div>
       ) : (
-        <div className="mb-4 lg:mb-8 p-4 rounded-lg shadow-lg bg-blue-50 dark:bg-blue-950 flex-shrink-0">
+        <div className="mb-4 lg:mb-8 p-4 rounded-lg shadow-lg bg-blue-50 text-blue-900 dark:text-white dark:bg-blue-950 flex-shrink-0">
           <h2 className="text-md sm:text-lg font-semibold mb-2 md:mb-4">Select Metrics (Max 2 different units)</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {metrics.map(metric => (
